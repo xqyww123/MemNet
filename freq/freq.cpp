@@ -11,6 +11,7 @@ namespace Xero
 {
 	namespace MemNet
 	{
+		float freq_most;
 		typedef unordered_map<string, float> freq_table;
 		freq_table data;
 		
@@ -25,6 +26,7 @@ namespace Xero
 				data.insert(make_pair<string, float>((string)w,(float)freq));
 			}
 			f.close();
+			freq_most=freq_query("_MOST_");
 		}
 		double freq_query(string str)
 		{

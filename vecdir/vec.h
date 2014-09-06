@@ -21,6 +21,7 @@ namespace Xero
 				FreqVec freq;
 
 				static Freqs* cal_freq(WVec* wvec);
+				static float cal_rate(int num, string word);
 				static Frates* cal_rate(Freqs*);
 				static Vec* cal_spread(Frates*, WVec*);
 				static Vec* cal_spread(WVec*);

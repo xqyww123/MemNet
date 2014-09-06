@@ -1,5 +1,6 @@
 #include "vec.h"
 #include "../freq/freq.h"
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <vector>
@@ -87,12 +88,18 @@ namespace Xero
 			delete errbuf, kwd, url_buf;
 			return re;
 		}
+		float Vec::cal_rate(int num, string word)
+		{
+			float t = freq_query(word);
+			if (t < 1E-10) t = freq_default;
+			return (float)num*log10(t/freq_most);
+		}
 		Frates* Vec::cal_rate(Freqs* frq)
 		{
 			Frates* re = new Frates();
 			for (auto a : *frq)
 			{
-				re->insert(make_pair<string, float>((string)a.first, (float)a.second/freq_query(a.first)));
+				re->insert(make_pair<string, float>((string)a.first, cal_rate((int)a.second,a.first)));
 			}
 			return re;
 		}
