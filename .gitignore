@@ -19,3 +19,11 @@
 *.exe
 *.out
 *.app
+
+CMakeCache.txt
+CMakeFiles/
+Makefile
+bin
+*.cmake
+*.swp
+tags

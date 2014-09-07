@@ -1,4 +1,4 @@
-//#define CONVERT
+#define CONVERT
 #ifdef CONVERT
 #include <cstdlib>
 #include <cstdio>
