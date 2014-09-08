@@ -238,7 +238,7 @@ namespace Xero
 				if (!enter)
 				{
 						if (c==' '||c=='\t'||c=='\n'||c=='\r') continue;
-					    else if (c != '(')	throw runtime_error("A Bad Word Vector. Expecting a '(' to start the vector.");
+					    else if (c != '(')	throw runtime_error("A Bad Word Vector. Expecting a '(' to start the vector. like (a b c), and use space to sperate the words.");
 						enter = true; 
 						continue;
 				}
@@ -262,6 +262,73 @@ namespace Xero
 			Freqs* req = cal_freq(wvec);
 			Frates* re = cal_rate(req);
 			delete req;
+			return re;
+		}
+
+#define wrt(x) write((char*)&x,sizeof(x))
+#define wr2(a,b) write((char*)a,sizeof(b))
+#define rd(x) read((char*)&x, (streamsize)sizeof(x))
+#define rd2(x,b) read((char*)x, sizeof(b))
+		template<typename T>
+		void wrt_vec (vector<T>& vec, fstream& f) 
+		{
+			auto tmpsz = vec.size();
+			f.wrt(tmpsz);
+			for (auto a : vec)
+				f.wrt(a);
+		}
+		void wrt_vec (vector<string>& vec, fstream& f)
+		{
+			auto tmpsz = vec.size();
+			f.wrt(tmpsz);
+			for (auto a : vec)
+				f.write(a.c_str(), sizeof(char[a.length()+1]));
+		}
+		void Vec:: write(fstream& f)
+		{
+			f.wrt("Vec");
+			wrt_vec(wvec, f);
+			wrt_vec(spread, f);
+			wrt_vec(freq, f);
+		}
+		template<typename T>
+		vector<T> rd_vec (fstream& f)
+		{
+			typename vector<T>::size_type sz; f.rd(sz);
+			vector<T> re; re.reserve(sz);
+			for (typename vector<T>::size_type i=0;i<sz;++i)
+			{
+				T some; f.rd(some);
+				re.push_back(some);
+			}
+			return re;
+		}
+		template<>
+		vector<string> rd_vec(fstream &f)
+		{
+			typename vector<string>::size_type sz; f.rd(sz);
+			vector<string> re; re.reserve(sz);
+			char* buf = new char[1024];
+			int bi = 0;
+			for (typename vector<string>::size_type i=0;i<sz;++i)
+			{
+				bi = 0;
+				do { f.read(buf+bi,sizeof(char)); }
+				while (buf[bi++] != '\0' && bi != 1024);
+				if (bi == 1024) throw runtime_error("The word is too long to read = =.");
+				re.push_back(string(buf));
+			}
+			return re;
+		}
+		Vec* Vec::read(fstream& f)
+		{
+			char buf[10];
+			f.rd2(buf,char[4]);
+			if (strcmp(buf, "Vec")) throw runtime_error("Bad file, there isn't Vec.");
+			Vec* re = new Vec();
+			re->wvec = rd_vec<string>(f);
+			re->spread = rd_vec<string>(f);
+			re->freq = rd_vec<float>(f);
 			return re;
 		}
 	}

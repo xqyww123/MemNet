@@ -22,11 +22,11 @@ namespace Xero
 				T data;
 		};
 		template <typename T>
-		class ResultTip : public pair<Pair<T>*, double>
+		class ResultTip : public pair<double, Pair<T>*>
 		{
 			public:
 				ResultTip() {}
-				ResultTip(Pair<T>* v, double s) : pair<Pair<T>*, double>(v,s) {}
+				ResultTip(Pair<T>* v, double s) : pair<double, Pair<T>*>(s,v) {}
 				Pair<T>* val();
 				double score();
 		};
@@ -34,8 +34,8 @@ namespace Xero
 		template <typename T>
 		class Dic
 		{
-				vector<Pair<T>*> data;
 			public:
+				vector<Pair<T>*> data;
 				typedef priority_queue<ResultTip<T> >  Result;
 				Result* query(Query* query);
 				Result* query(WVec& query);
@@ -43,7 +43,12 @@ namespace Xero
 				static double score(Frates* a, Vec* b);
 				void insert(Key& key, T& data);
 				void insert(WVec& vec, T& data);
-				void write(fstream& f);
+				void remove(Pair<T>* pair) { data.erase(find(data.begin(), data.end(), pair)); }
+
+				typedef void (*DataSerialize) (T& data, fstream& f);
+				void write(fstream& f, DataSerialize ser);
+				typedef T (*DataDeserialize) (fstream& f);
+				static Dic* read(fstream& f, DataDeserialize deser);
 		};
 	}
 }

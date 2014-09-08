@@ -2,23 +2,32 @@
 #include "common.h"
 #include <vector>
 #include <string>
+#include <functional>
 
 using namespace std;
 
 namespace Xero {
 	namespace MemNet {
 
+		class CommandError : public runtime_error
+		{
+			public:
+				CommandError() : runtime_error("Bad Command.") {}
+				CommandError(const string& msg) : runtime_error(msg) {}
+		};
+
+		class Status;
 		class Action
 		{
 			public:
-				typedef void (*ActFunc) ();
+				typedef function<void(Status&)> ActFunc;
 				Action(string _name, ActFunc _f) : name(_name), func(_f) {}
 				Action(string _name, ActFunc _f, string _comment) :comment(_comment), name(_name), func(_f) {}
 
 				string name;
 				string comment;
 				ActFunc func;
-				void invoke();
+				void invoke(Status& who);
 		};
 		class Status
 		{
@@ -30,7 +39,7 @@ namespace Xero {
 				string name;
 
 				void invoke(string name);
-				void add_action(Action& act);
+				void add_action(const Action& act);
 		};
 		class StatusMng
 		{

@@ -12,16 +12,16 @@ namespace Xero{
 		void StatusMng::init(Status& _default)
 		{
 			trans(_default);
-			specials.push_back(Action("exit", StatusMng::end_interactive));
-			specials.push_back(Action("?", StatusMng::show_help));
-			specials.push_back(Action("help", StatusMng::show_help));
+			specials.push_back(Action("exit", [](Status& a){StatusMng::end_interactive();}));
+			specials.push_back(Action("?", [](Status& a){StatusMng::show_help();}));
+			specials.push_back(Action("help", [](Status& a){StatusMng::show_help();}));
 		}
-		void Action::invoke() { func(); }
+		void Action::invoke(Status& who) { func(who); }
 		void Status::invoke(string name)
 		{
 			for (auto a : actions)
 			{
-				if (a.name == name) { a.invoke(); return; }
+				if (a.name == name) { a.invoke(*this); return; }
 			}
 			throw out_of_range((string("Action ") + name + " not found = =!"));
 		}
@@ -31,9 +31,12 @@ namespace Xero{
 		}
 		void StatusMng::invoke(string name)
 		{
-			for (auto a : specials) 
-			{ if (a.name==name) {a.invoke(); return; }}
-			current->invoke(name);
+			try { current->invoke(name); }
+			catch (const out_of_range& e) {
+				for (auto a : specials) 
+				{ if (a.name==name) {a.invoke(*current); return; }}
+				throw e;
+			}
 		}
 		void StatusMng::read_act()
 		{
@@ -59,7 +62,7 @@ namespace Xero{
 				printf("%s\t\t%s\n", a.name.c_str(), a.comment.c_str());
 			puts("");
 		}
-		void Status::add_action(Action& act)
+		void Status::add_action(const Action& act)
 		{
 			for (int i=0;i<actions.size();++i)
 				if (actions[i].name == act.name)

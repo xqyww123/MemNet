@@ -1,7 +1,6 @@
 #pragma once
 #include "dic.h"
 #include <cmath>
-#include <cstring>
 
 using namespace std;
 
@@ -76,50 +75,32 @@ namespace Xero
 
 
 		/**** write region *****/
-#define wrt(x) write((char*)&x,sizeof(x))
-#define wr2(a,b) write((char*)a,sizeof(b))
-#define rd(x) read((char*)&x, (streamsize)sizeof(x))
-#define rd2(x,b) read((char*)x, sizeof(b))
+#define wrt(x) write(x,sizeof(x))
+#define wr2(a,b) write(a,sizeof(b))
+#define rd(x) read(&x, sizeof(x))
+#define rd2(x,b) read(x, sizeof(b))
 		template<typename T>
-		void wrt_pr(Pair<T>* pr, fstream& f, typename Dic<T>::DataSerialize ser)
+		void wrt_pr(Pair<T>* pr, fstream f, DataSerialize ser)
 		{
 			pr->key.write(f);
 			ser(pr->data, f);
 		}
 
 		template<typename T>
-		void Dic<T>::write(fstream& f, typename Dic<T>::DataSerialize ser)
+		void Dic<T>::write(fstream& f, DataSerialize ser);
 		{
 			f.write("MemDic", sizeof(char[7]));
-			auto tmpsz = data.size();
-			f.wrt(tmpsz);
+			f.wrt(data.size());
 			for (auto a : data)
 			{
 				wrt_pr(a,f,ser);
 			}
 		}
 		template<typename T>
-		Pair<T>* rd_pr(fstream& f, typename Dic<T>::DataDeserialize deser)
-		{
-			auto* re = new Pair<T>();
-			re->key = *Key::read(f);
-			re->data = deser(f);
-			return re;
-		}
-		template<typename T>
-		Dic<T>* Dic<T>::read(fstream& f, typename Dic<T>::DataDeserialize deser)
+		Dic* Dic<T>::read(fstream& f)
 		{
 			char buf[10];
-			f.rd2(buf, char[7]);
-			if (strcmp(buf,"MemDic")) throw runtime_error("There is no MemDic in the file = =.");
-			Dic* re = new Dic();
-			vector<string>::size_type sz; f.rd(sz);
-			re->data.reserve(sz);
-			for (vector<string>::size_type i=0;i<sz;++i)
-			{
-				re->data.push_back(rd_pr<T>(f, (typename Dic<T>::DataDeserialize)deser));
-			}
-			return re;
+			f.
 		}
 		/**** write region end */
 	}

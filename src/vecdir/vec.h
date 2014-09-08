@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <fstream>
 using namespace std;
 
 namespace Xero
@@ -28,6 +29,9 @@ namespace Xero
 				static Vec* cal_spread(WVec*);
 				static WVec* read_wvec(FILE* f);
 				static void init();
+
+				void write(fstream& f);
+				static Vec* read(fstream& f);
 		};
 
 		char* prt_WVec(WVec* wvec);

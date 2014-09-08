@@ -1,5 +1,6 @@
 #include "config.h"
 #include <cstring>
+#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <fstream>
@@ -9,6 +10,10 @@ namespace Xero
 	namespace MemNet
 	{
 
+		bool Config::q;
+		string Config::text_editor;
+		string Config::web_browser;
+		string Config::dir_browser;
 		ConDic Config::dic;
 		string Config::search_engine_url;
 		string Config::DEFAULT_HEAD_STR;
@@ -51,6 +56,9 @@ namespace Xero
 
 
 		const char* default_url = "http://www.google.com/search?q=%s&lr=lang_en&num=50&gws_rd=ssl&ie=UTF-8";
+		const char* default_text = "vim %s";
+		const char* default_web = "xdg-open %s";
+		const char* default_dir = "xdg-open %s";
 		void Config::init(int argc, char* argv[])
 		{
 			DEFAULT_HEAD_STR = DEFAULT_HEAD;
@@ -64,7 +72,17 @@ namespace Xero
 					fputs("However, the url may be BLOCKED in chinese area, please use a proxy or indicate another \
 ENGLISH search engin url. (as far as I know, there isn'a stable ENGLISH engine in BLOCKED area. = =)\n", stderr);
 			   	}
+			if (dic.find("text_editor") == dic.end())
+			{
+				fputs("Warning : text_editor not set, using default text_editor : ", stderr);
+				fputs(default_text, stderr);
+			}
+
 			Config::search_engine_url = get("seach_engine_url",default_url);
+			Config::text_editor = get("text_editor", default_text);
+			Config::web_browser = get("web_browser", default_web);
+			Config::dir_browser = get("dir_browser", default_dir);
+			Config::q = getb("q", false);
 		}
 		string Config::get(string name, string defual)
 		{
@@ -73,18 +91,30 @@ ENGLISH search engin url. (as far as I know, there isn'a stable ENGLISH engine i
 		}
 		int Config::geti(string name, int defual)
 		{
-			try { return to_i(dic.at(name), defual); }
+			int re;
+			try { re = to_i(dic.at(name)); }
 			catch(const out_of_range& ) { return defual; }
+			catch(const format_error&) 
+				{ fprintf(stderr, "You indicated %s which only receive number. We can not understand your indication and the defualt value was adopted\n", name.c_str()); return defual; }
+			return re;
 		}
 		bool Config::getb(string name, bool defual)
 		{
-			try { return to_b(dic.at(name), defual); }
+			bool re;
+			try { re = to_b(dic.at(name)); }
 			catch(const out_of_range& ) { return defual; }
+			catch(const format_error&) 
+				{ fprintf(stderr, "You indicated %s which only receive Y/N value. We can not understand your indication and the defualt value was adopted\n", name.c_str()); return defual; }
+			return re;
 		}
 		double Config::getd(string name, double defual)
 		{
-			try { return to_d(dic.at(name), defual); }
+			double re;
+			try { re = to_d(dic.at(name)); }
 			catch(const out_of_range& ) { return defual; }
+			catch(const format_error&) 
+				{ fprintf(stderr, "You indicated %s which only receive float. We can not understand your indication and the defualt value was adopted\n", name.c_str()); return defual; }
+			return re;
 		}
 		string Config::action(int i, string defual)
 		{

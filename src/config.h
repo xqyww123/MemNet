@@ -20,6 +20,10 @@ namespace Xero
 
 			static ConDic dic;
 			static string search_engine_url;
+			static string text_editor;
+			static string web_browser;
+			static string dir_browser;
+			static bool q;
 
 			static void init(int argc, char* argv[]);
 			static string get(string name, string defaul);
