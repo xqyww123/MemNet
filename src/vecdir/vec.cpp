@@ -10,6 +10,7 @@
 #include "../config.h"
 #include <queue>
 #include <map>
+#include <unordered_set>
 using namespace std;
 
 namespace Xero
@@ -22,20 +23,36 @@ namespace Xero
 		map<string, string> word_map;
 		void init_word_map() 
 		{
-			word_map.insert({{"an","a"},{"are", "be"}, {"is", "be"},{"co",""}, {"ca","-."}, {"www",""},{"com","-."},{"cn","-."},{"net","-."},{"org","-."}, {"nbsp", "-&"}, {"amp","-&"}, {"quot", "-&"}, {"gt","-&"}, {"lt","-&"}, {"cached", "->"}, {"similar","->"}, {"https","->"}});
+			word_map.insert({{"an","a"},{"are", "be"}, {"is", "be"},{"co",""}, {"ca","-."}, {"www",""},{"com","-."},{"cn","-."},{"net","-."},{"org","-."}, {"nbsp", "-&"}, {"amp","-&"}, {"quot", "-&"}, {"gt","-&"}, {"lt","-&"}, {"cached", "->"}, {"similar","->"}, {"https","->"}, {"jan","janurary"},{"feb","february"},{"mar", "march"},{"apr", "april"},{"jun", "june"},{"jul","july"},{"aug","august"},{"sep","september"},{"oct","october"},{"nov","november"},{"dec","december"},{"books","book"}});
 		}
 		void Vec::init()
 		{
 			init_word_map();
 		}
 		struct Engine { short brc; char word[128]; int wi; Freqs* re; int flags; int like[like_cnt]; char last_sign;};
+		void de_kwd(Freqs* re, WVec* kwdvec)
+		{
+			int mv = 0, kv=0;
+			unordered_set<string> kwd(kwdvec->begin(), kwdvec->end(), kwdvec->size());
+			for (auto a : *re)
+			{
+				if (kwd.find(a.first) == kwd.end())
+					mv = max(mv, a.second);
+				else kv = max(kv, a.second);
+
+			}
+			for (auto a : *kwdvec)
+			{
+				if (re->find(a) != re->end())
+					(*re)[a] = (*re)[a]*mv/kv;
+			}
+		}
 		void pushin(Engine* eng)
 		{
 			if (eng->wi)
 			{
 				eng->word[eng->wi]='\0';
 				for (int i=0;i<eng->wi;++i) eng->word[i] = tolower(eng->word[i]);
-				puts(eng->word);
 				string str(eng->word); 
 				if (word_map.find(str) != word_map.end())
 				{
@@ -52,7 +69,7 @@ namespace Xero
 				if (eng->re->find(str) == eng->re->end())
 					eng->re->insert(make_pair<string,int>((string)str, (int)0));
 				eng->re->at(str) ++;
-				eng->wi = 0;
+				puts(eng->word) ; eng->wi = 0;
 			}
 		}
 		size_t andata(char *ptr, size_t wk_size, size_t nmemb, void *userdata)
@@ -87,8 +104,12 @@ namespace Xero
 					if (!eng->brc)  {
 						if (eng->flags) continue;
 						if ((*now <= 'Z' && *now >= 'A' || *now <= 'z' && *now >= 'a'))
-							{ 
-								eng->word[eng->wi++] = *now; }
+						{ eng->word[eng->wi++] = *now;
+							eng->word[eng->wi] = '\0';
+					   
+							if (!strcmp(eng->word, "Aug"))
+								puts("Here !");
+						}
 						else 
 						{
 							pushin(eng);
@@ -109,9 +130,6 @@ namespace Xero
 									if (like_stat[j]>0)
 										eng->flags |= 1<<(like_stat[j]);
 									else eng->flags &= (-1 ^ (1<<(-like_stat[j])));
-									printf("XxX %d : ", eng->flags);
-									for (int i=0;i<20;++i) putchar(*(now-10+i));
-									putchar('\n');
 								}
 							}
 						}
@@ -158,6 +176,7 @@ namespace Xero
 			int code; curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 			printf("Code : %d\n", code);
 			delete errbuf, kwd, url_buf;
+			de_kwd(re, wvec);
 			return re;
 		}
 		float Vec::cal_rate(int num, string word)
@@ -218,7 +237,7 @@ namespace Xero
 				if (c == -1) throw runtime_error("Unexpected EOF");
 				if (!enter)
 				{
-						if (c==' '||c=='\t') continue;
+						if (c==' '||c=='\t'||c=='\n'||c=='\r') continue;
 					    else if (c != '(')	throw runtime_error("A Bad Word Vector. Expecting a '(' to start the vector.");
 						enter = true; 
 						continue;
@@ -237,6 +256,13 @@ namespace Xero
 						if (bi == 255) throw runtime_error("Too long a word = =");
 				}
 			}
+		}
+		Frates* Vec::cal_rate(WVec* wvec)
+		{
+			Freqs* req = cal_freq(wvec);
+			Frates* re = cal_rate(req);
+			delete req;
+			return re;
 		}
 	}
 }

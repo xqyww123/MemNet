@@ -4,6 +4,7 @@
 #include "config.h"
 #include "act.h"
 #include "vecdir/vec.h"
+#include "vecdir/dic.h"
 using namespace std;
 using namespace Xero::MemNet;
 
@@ -12,10 +13,20 @@ Status main_st;
 void test()
 {
 	WVec* wv = Vec::read_wvec(stdin);
-	Freqs* fr = Vec::cal_freq(wv);
-	Frates* rt = Vec::cal_rate(fr);
-	Vec* vec = Vec::cal_spread(wv);
+	Dic<string> dic;
+	string a("aaaaaa");
+	dic.insert(*wv,a); delete wv;
+	wv = Vec::read_wvec(stdin);
+	string b("bbbbbb");
+	dic.insert(*wv, b); delete wv;
+	wv = Vec::read_wvec(stdin);
+	dic.insert(*wv, b); 
+	auto re = dic.query(*wv);
+	auto ra = re->top(); re->pop();
+	auto rb = re->top(); re->pop();
+	auto rc = re->top(); re->pop();
 	puts("tested");
+	delete wv;
 }
 void init(int argc, char* argv[])
 {
