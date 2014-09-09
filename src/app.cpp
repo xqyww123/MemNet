@@ -342,7 +342,6 @@ find_end:
 		void MainSta::read_file()
 		{
 			fstream f(save_adress().c_str(), fstream::in | fstream::binary);
-			printf("xxxx %d\n", f.good());
 			if (!f.good()) return;
 			dic = *Dic<Note*>::read(f, (function<Note*(fstream&)>)Note::read_Note);
 			f.close();
