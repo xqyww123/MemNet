@@ -10,15 +10,12 @@ namespace Xero
 {
 	namespace MemNet
 	{
-
+		string Config::default_excu;
+		string Config::save_adress;
 		bool Config::q;
-		string Config::text_editor;
-		string Config::web_browser;
-		string Config::dir_browser;
 		ConDic Config::dic;
 		string Config::search_engine_url;
 		string Config::DEFAULT_HEAD_STR;
-		string Config::notedir;
 
 		void add_config(const char* str, ConDic& dic, int& default_cnt)
 		{
@@ -58,10 +55,7 @@ namespace Xero
 
 
 		const char* default_url = "http://www.google.com/search?q=%s&lr=lang_en&num=50&gws_rd=ssl&ie=UTF-8";
-		const char* default_text = "vim %s";
-		const char* default_web = "nohup xdg-open \"%s\" 2>/dev/null 1>/dev/null &";
-		const char* default_dir = "nohup xdg-open \"%s\" 2>/dev/null 1>/dev/null &";
-		const char* default_notedir = "~/.mem_notes";
+		const char* default_save_ad = "~/.memfile";
 		void Config::init(int argc, char* argv[])
 		{
 			DEFAULT_HEAD_STR = DEFAULT_HEAD;
@@ -75,22 +69,11 @@ namespace Xero
 					fputs("However, the url may be BLOCKED in chinese area, please use a proxy or indicate another \
 ENGLISH search engin url. (as far as I know, there isn'a stable ENGLISH engine in BLOCKED area. = =)\n", stderr);
 			   	}
-			if (dic.find("text_editor") == dic.end())
-			{
-				fputs("Warning : text_editor not set, using default text_editor : ", stderr);
-				fputs(default_text, stderr);
-				fputc('\n', stderr);
-			}
-
 			Config::search_engine_url = (get("seach_engine_url",default_url));
-			Config::text_editor = extract_tilde(get("text_editor", default_text));
-			Config::web_browser = extract_tilde(get("web_browser", default_web));
-			Config::dir_browser = extract_tilde(get("dir_browser", default_dir));
+			Config::default_excu = extract_tilde(get("default_excu", default_default_excu));
 			Config::q = getb("q", false);
-			Config::notedir = extract_tilde(get("notedir", default_notedir));
+			Config::save_adress = extract_tilde(get("save_adress", default_save_ad));
 			struct stat stabuf;
-			if (stat(notedir.c_str(), &stabuf) && mkdir(notedir.c_str(), S_IRWXU | S_IRWXG)) 
-				throw runtime_error(string_format("Error : can not access notedir : %s", notedir.c_str()));
 		}
 		string Config::get(string name, string defual)
 		{
@@ -127,6 +110,21 @@ ENGLISH search engin url. (as far as I know, there isn'a stable ENGLISH engine i
 		string Config::action(int i, string defual)
 		{
 			return get(Config::DEFAULT_HEAD_STR+to_string(i), defual);
+		}
+		string Config::action_must (int i, string name)
+		{
+			try { return dic.at(Config::DEFAULT_HEAD_STR+to_string(i)); }
+			catch(const out_of_range& ) 
+			{ 
+				fprintf(stderr, "Action %s, at %dth parameter list, is required.\n", name.c_str(), i);
+				exit(1);
+			}
+		}
+		string Config::get_must(string name, string parm_name)
+		{
+			try { return dic.at(name); }
+			catch (const out_of_range&) 
+			{ fprintf(stderr, "Parametere %d is required\n", parm_name.c_str()); exit(1); }
 		}
 	}
 }

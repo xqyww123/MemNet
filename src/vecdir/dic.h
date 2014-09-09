@@ -43,8 +43,8 @@ namespace Xero
 				static double score(Frates* a, Vec* b);
 				void insert(Key& key, T& data);
 				void insert(WVec& vec, T& data);
-				void remove(Pair<T>* pair) { data.erase(find(data.begin(), data.end(), pair)); }
-
+				Pair<T>* remove(Pair<T>* pair) ;
+				bool remove(T val);
 				typedef function<void(T&, fstream&)> DataSerialize;
 				void write(fstream& f, DataSerialize ser);
 				typedef function<T(fstream& f)> DataDeserialize;

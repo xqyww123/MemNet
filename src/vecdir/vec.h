@@ -28,6 +28,7 @@ namespace Xero
 				static Vec* cal_spread(Frates*, WVec*);
 				static Vec* cal_spread(WVec*);
 				static WVec* read_wvec(FILE* f);
+				static WVec* read_wvec(string str);
 				static WVec* ui_read_wvec(const char* what);
 				static void init();
 

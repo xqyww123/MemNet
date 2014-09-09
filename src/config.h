@@ -20,11 +20,10 @@ namespace Xero
 
 			static ConDic dic;
 			static string search_engine_url;
-			static string text_editor;
-			static string web_browser;
-			static string dir_browser;
 			static bool q;
-			static string notedir;
+			static string default_excu;
+			static string save_adress;
+			const constexpr static char* default_default_excu = "nohup xdg-open \"%s\" 2>/dev/null 1>/dev/null &";
 
 			static void init(int argc, char* argv[]);
 			static string get(string name, string defaul);
@@ -33,6 +32,8 @@ namespace Xero
 			static double getd(string name, double defaul);
 
 			static string action(int i, string defaul);
+			static string action_must (int i, string name);
+			static string get_must(string name, string parm_name);
 		};
 	}
 }

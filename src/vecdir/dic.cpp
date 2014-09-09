@@ -122,5 +122,15 @@ namespace Xero
 			return re;
 		}
 		/**** write region end */
+		template<typename T>
+		Pair<T>* Dic<T>::remove(Pair<T>* pair) { auto re =data.erase(find(data.begin(), data.end(), pair)); return (re==data.end()?NULL:re); }
+		template<typename T>
+		bool Dic<T>::remove(T val)
+		{
+			auto i = find_if(data.begin(), data.end(), [=](Pair<T>* v){return v->data == val;});
+			if (i == data.end()) return false;
+			data.erase(i);
+			return true;
+		}
 	}
 }

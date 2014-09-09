@@ -25,8 +25,8 @@ int to_i(string& str, int defaul)
 bool to_b(string str)
 {
 	transform(str.begin(), str.end(), str.begin(), ::tolower);
-	if (str=="true" || str=="t") return true;
-	else if (str == "false" || str=="f") return false;
+	if (like(str,"true") || like(str, "yes")) return true;
+	else if (like(str, "false") || like(str, "no")) return false;
 	throw format_error("Bad bool = =");
 }
 bool to_b(string str, bool defaul)
@@ -171,6 +171,15 @@ string ui_getval(const string& tink)
 	if (user_input_newline()) cout << tink;
 	cin >> re;
 	return re;
+}
+bool ui_getbool(const string& tink)
+{
+	while (true)
+	{
+		try { return to_b(ui_getval(tink)); }
+		catch (const format_error&) { puts("Bad format."); continue; }
+		break;
+	}
 }
 bool like(const string& a, const string& b)
 {

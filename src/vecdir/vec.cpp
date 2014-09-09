@@ -69,6 +69,7 @@ namespace Xero
 				if (str.length() < 2) { eng->wi=0; return; }
 				if (eng->re->find(str) == eng->re->end())
 					eng->re->insert(make_pair<string,int>((string)str, (int)0));
+				eng->wi = 0;
 				eng->re->at(str) ++;
 			}
 		}
@@ -217,7 +218,8 @@ namespace Xero
 			to.push_back(string(buf));
 			bi = 0;
 		}
-		WVec* Vec::read_wvec(FILE* f)
+		template<typename Func>
+		WVec* read_wvec_inner(Func func)
 		{
 			WVec *re = new WVec();
 			bool enter = false;
@@ -225,7 +227,7 @@ namespace Xero
 			int bi=0;
 			while (true)
 			{
-				int c = fgetc(f);
+				int c = func();
 				if (c == -1) throw format_error("Unexpected EOF");
 				if (!enter)
 				{
@@ -249,6 +251,10 @@ namespace Xero
 				}
 			}
 		}
+		WVec* Vec::read_wvec(FILE* f)
+	   	{ return read_wvec_inner([=]()->int{ return fgetc(f); }); }
+		WVec* Vec::read_wvec(string str)
+		{ int i=0; return read_wvec_inner([&]()->int{ return str[i++]; });}
 		Frates* Vec::cal_rate(WVec* wvec)
 		{
 			Freqs* req = cal_freq(wvec);

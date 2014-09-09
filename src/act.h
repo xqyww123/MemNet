@@ -60,6 +60,7 @@ namespace Xero {
 				static void read_act();
 				static void run_interactive();
 				static void end_interactive();
+				static void run_cmd();
 				static void show_help();
 		};
 	}

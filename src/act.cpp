@@ -82,5 +82,9 @@ namespace Xero{
 			actions.push_back(act);
 		}
 
+		void StatusMng::run_cmd()
+		{
+			invoke(Config::action_must(1, "action"));
+		}
 	}
 }

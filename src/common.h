@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <stdarg.h>
 #include <memory> 
 #include <vector>
@@ -13,7 +14,6 @@ using namespace std;
 #define ce_setopt(a,b,c) assert(! curl_easy_setopt(a,b,c))
 #define _TO_STR(x) #x
 #define TO_STR(x) _TO_STR(x)
-
 
 class format_error : public runtime_error
 {
@@ -56,6 +56,23 @@ string string_format(const string fmt_str, ...) ;
 
 bool user_input_newline();
 string ui_getval(const string& tink);
+bool ui_getbool(const string& tink);
 bool like(const string& a, const string& b);
 
 string extract_tilde(const string& str);
+#define may_null(may,mark,exp) auto mark=(may) (mark?NULL:(exp)) 
+
+template<typename T, typename Func>
+T ui_get(string name, Func convert)
+{
+	T re;
+	while (true)
+	{
+		printf("%s : ", name.c_str());
+		string str; getline(cin, str);
+		try { re = convert(str); }
+		catch (...) { continue; }
+		break;
+	}
+	return re;
+}
