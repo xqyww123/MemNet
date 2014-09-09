@@ -6,7 +6,6 @@ using namespace std;
 namespace Xero{
 	namespace MemNet{
 
-
 		Status* StatusMng::current;
 		vector<Action> StatusMng::specials;
 		void StatusMng::init(Status& _default)
@@ -19,11 +18,15 @@ namespace Xero{
 		void Action::invoke(Status& who) { func(who); }
 		void Status::invoke(string name)
 		{
-			for (auto a : actions)
+			int may = -1;
+			for (int i=0;i<actions.size();++i)
 			{
+				Action& a = actions[i];
 				if (a.name == name) { a.invoke(*this); return; }
+				if (like(a.name, name)) may = (may==-1?i:-2);
 			}
-			throw out_of_range((string("Action ") + name + " not found = =!"));
+			if (may >= 0) { actions[may].invoke(*this); return; }
+			throw ActionNotFound((string("Action ") + name + " not found = =!"));
 		}
 		void StatusMng::trans(Status& status)
 		{
@@ -31,10 +34,17 @@ namespace Xero{
 		}
 		void StatusMng::invoke(string name)
 		{
+			int may = -1;
 			try { current->invoke(name); }
-			catch (const out_of_range& e) {
-				for (auto a : specials) 
-				{ if (a.name==name) {a.invoke(*current); return; }}
+			catch (const ActionNotFound& e) {
+				for (int i=0;i<specials.size();++i)
+				{ 
+					Action& a = specials[i];
+					if (a.name==name) {a.invoke(*current); return; }
+					if (like(a.name, name)) may = (may==-1?i:-2);
+				}
+				if (may >= 0)
+				{ specials[may].invoke(*current); return; }
 				throw e;
 			}
 		}
@@ -52,7 +62,9 @@ namespace Xero{
 			interactive_break = false;
 			while (!interactive_break)
 			{
-				read_act();
+				try { read_act(); }
+				catch( const ActionNotFound& e)
+				{ puts(e.what()); }
 			}
 		}
 		void StatusMng::show_help()

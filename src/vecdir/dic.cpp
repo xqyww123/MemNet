@@ -48,10 +48,10 @@ namespace Xero
 		template<typename T>
 		Pair<T>* ResultTip<T>::val()
 		{
-			return this->first;
+			return this->second;
 		}
 		template<typename T>
-		double ResultTip<T>::score() { return this->second; }
+		double ResultTip<T>::score() { return this->first; }
 
 		template<typename T>
 		void Dic<T>::insert(Key& key, T& v)

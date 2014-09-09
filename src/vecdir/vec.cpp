@@ -1,4 +1,5 @@
 #include "vec.h"
+#include "../tools/file.h"
 #include "../freq/freq.h"
 #include <stdexcept>
 #include <cmath>
@@ -69,15 +70,12 @@ namespace Xero
 				if (eng->re->find(str) == eng->re->end())
 					eng->re->insert(make_pair<string,int>((string)str, (int)0));
 				eng->re->at(str) ++;
-				puts(eng->word) ; eng->wi = 0;
 			}
 		}
 		size_t andata(char *ptr, size_t wk_size, size_t nmemb, void *userdata)
 		{
 			Engine* eng = (Engine*) userdata;
 			size_t sz=wk_size*nmemb,  rm; rm = sz; char *now;
-			//puts(ptr);
-			printf("XxX start %d \n", eng->flags);
 			for (now=ptr;rm;--rm,now++)
 			{
 				//fflush(stdout);
@@ -104,12 +102,7 @@ namespace Xero
 					if (!eng->brc)  {
 						if (eng->flags) continue;
 						if ((*now <= 'Z' && *now >= 'A' || *now <= 'z' && *now >= 'a'))
-						{ eng->word[eng->wi++] = *now;
-							eng->word[eng->wi] = '\0';
-					   
-							if (!strcmp(eng->word, "Aug"))
-								puts("Here !");
-						}
+						 eng->word[eng->wi++] = *now;
 						else 
 						{
 							pushin(eng);
@@ -135,7 +128,6 @@ namespace Xero
 						}
 				}
 			}
-			printf("Enter : %d\n", sz);
 			return sz;
 		}
 
@@ -160,7 +152,6 @@ namespace Xero
 			char* kwd = prt_WVec(wvec);
 			char* url_buf = new char[strlen(kwd)+Config::search_engine_url.length()+1];
 			sprintf(url_buf, Config::search_engine_url.c_str(), kwd);
-			printf("Url : \n%s\n", url_buf);
 			ce_setopt(curl, CURLOPT_URL, url_buf);
 			Freqs * re = new Freqs();
 			Engine eng; memset(&eng, 0, sizeof(eng));
@@ -174,7 +165,8 @@ namespace Xero
 			{ fputs("Error, curl failed:", stderr); fputs(errbuf, stderr); }
 			curl_easy_cleanup(curl);
 			int code; curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
-			printf("Code : %d\n", code);
+			if (code != 200)
+				printf("Web require code : %d\n", code);
 			delete errbuf, kwd, url_buf;
 			de_kwd(re, wvec);
 			return re;
@@ -234,11 +226,11 @@ namespace Xero
 			while (true)
 			{
 				int c = fgetc(f);
-				if (c == -1) throw runtime_error("Unexpected EOF");
+				if (c == -1) throw format_error("Unexpected EOF");
 				if (!enter)
 				{
 						if (c==' '||c=='\t'||c=='\n'||c=='\r') continue;
-					    else if (c != '(')	throw runtime_error("A Bad Word Vector. Expecting a '(' to start the vector. like (a b c), and use space to sperate the words.");
+					    else if (c != '(')	throw format_error("A Bad Word Vector. Expecting a '(' to start the vector. like (a b c), and use space to sperate the words.");
 						enter = true; 
 						continue;
 				}
@@ -253,7 +245,7 @@ namespace Xero
 						break;
 					default:
 						buf[bi++] = c;
-						if (bi == 255) throw runtime_error("Too long a word = =");
+						if (bi == 255) throw format_error("Too long a word = =");
 				}
 			}
 		}
@@ -269,57 +261,6 @@ namespace Xero
 #define wr2(a,b) write((char*)a,sizeof(b))
 #define rd(x) read((char*)&x, (streamsize)sizeof(x))
 #define rd2(x,b) read((char*)x, sizeof(b))
-		template<typename T>
-		void wrt_vec (vector<T>& vec, fstream& f) 
-		{
-			auto tmpsz = vec.size();
-			f.wrt(tmpsz);
-			for (auto a : vec)
-				f.wrt(a);
-		}
-		void wrt_vec (vector<string>& vec, fstream& f)
-		{
-			auto tmpsz = vec.size();
-			f.wrt(tmpsz);
-			for (auto a : vec)
-				f.write(a.c_str(), sizeof(char[a.length()+1]));
-		}
-		void Vec:: write(fstream& f)
-		{
-			f.wrt("Vec");
-			wrt_vec(wvec, f);
-			wrt_vec(spread, f);
-			wrt_vec(freq, f);
-		}
-		template<typename T>
-		vector<T> rd_vec (fstream& f)
-		{
-			typename vector<T>::size_type sz; f.rd(sz);
-			vector<T> re; re.reserve(sz);
-			for (typename vector<T>::size_type i=0;i<sz;++i)
-			{
-				T some; f.rd(some);
-				re.push_back(some);
-			}
-			return re;
-		}
-		template<>
-		vector<string> rd_vec(fstream &f)
-		{
-			typename vector<string>::size_type sz; f.rd(sz);
-			vector<string> re; re.reserve(sz);
-			char* buf = new char[1024];
-			int bi = 0;
-			for (typename vector<string>::size_type i=0;i<sz;++i)
-			{
-				bi = 0;
-				do { f.read(buf+bi,sizeof(char)); }
-				while (buf[bi++] != '\0' && bi != 1024);
-				if (bi == 1024) throw runtime_error("The word is too long to read = =.");
-				re.push_back(string(buf));
-			}
-			return re;
-		}
 		Vec* Vec::read(fstream& f)
 		{
 			char buf[10];
@@ -330,6 +271,26 @@ namespace Xero
 			re->spread = rd_vec<string>(f);
 			re->freq = rd_vec<float>(f);
 			return re;
+		}
+		WVec* Vec::ui_read_wvec(const char* what)
+		{
+			WVec* re;
+			while (1) {
+				if (!Config::q)
+					printf("Input the %s: ", what);
+				try { re	= read_wvec(stdin); }
+		    	catch (const format_error& e)
+		    	{ puts(e.what()); continue; }
+				break;
+			}
+			return re;
+		}
+		void Vec::write(fstream& f)
+		{
+			f.wrt("Vec");
+			wrt_vec(wvec, f);
+			wrt_vec(spread, f);
+			wrt_vec(freq, f);
 		}
 	}
 }

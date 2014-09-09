@@ -9,6 +9,12 @@ using namespace std;
 namespace Xero {
 	namespace MemNet {
 
+		class ActionNotFound : public runtime_error
+		{
+			public :
+				ActionNotFound() : runtime_error("Action not found") {}
+				ActionNotFound(const string& str) : runtime_error(str) {}
+		};
 		class CommandError : public runtime_error
 		{
 			public:
@@ -20,6 +26,7 @@ namespace Xero {
 		class Action
 		{
 			public:
+				Action() {}
 				typedef function<void(Status&)> ActFunc;
 				Action(string _name, ActFunc _f) : name(_name), func(_f) {}
 				Action(string _name, ActFunc _f, string _comment) :comment(_comment), name(_name), func(_f) {}

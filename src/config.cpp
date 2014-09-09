@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <fstream>
+#include <sys/stat.h>
 
 namespace Xero
 {
@@ -17,6 +18,7 @@ namespace Xero
 		ConDic Config::dic;
 		string Config::search_engine_url;
 		string Config::DEFAULT_HEAD_STR;
+		string Config::notedir;
 
 		void add_config(const char* str, ConDic& dic, int& default_cnt)
 		{
@@ -57,8 +59,9 @@ namespace Xero
 
 		const char* default_url = "http://www.google.com/search?q=%s&lr=lang_en&num=50&gws_rd=ssl&ie=UTF-8";
 		const char* default_text = "vim %s";
-		const char* default_web = "xdg-open %s";
-		const char* default_dir = "xdg-open %s";
+		const char* default_web = "nohup xdg-open \"%s\" 2>/dev/null 1>/dev/null &";
+		const char* default_dir = "nohup xdg-open \"%s\" 2>/dev/null 1>/dev/null &";
+		const char* default_notedir = "~/.mem_notes";
 		void Config::init(int argc, char* argv[])
 		{
 			DEFAULT_HEAD_STR = DEFAULT_HEAD;
@@ -76,13 +79,18 @@ ENGLISH search engin url. (as far as I know, there isn'a stable ENGLISH engine i
 			{
 				fputs("Warning : text_editor not set, using default text_editor : ", stderr);
 				fputs(default_text, stderr);
+				fputc('\n', stderr);
 			}
 
-			Config::search_engine_url = get("seach_engine_url",default_url);
-			Config::text_editor = get("text_editor", default_text);
-			Config::web_browser = get("web_browser", default_web);
-			Config::dir_browser = get("dir_browser", default_dir);
+			Config::search_engine_url = (get("seach_engine_url",default_url));
+			Config::text_editor = extract_tilde(get("text_editor", default_text));
+			Config::web_browser = extract_tilde(get("web_browser", default_web));
+			Config::dir_browser = extract_tilde(get("dir_browser", default_dir));
 			Config::q = getb("q", false);
+			Config::notedir = extract_tilde(get("notedir", default_notedir));
+			struct stat stabuf;
+			if (stat(notedir.c_str(), &stabuf) && mkdir(notedir.c_str(), S_IRWXU | S_IRWXG)) 
+				throw runtime_error(string_format("Error : can not access notedir : %s", notedir.c_str()));
 		}
 		string Config::get(string name, string defual)
 		{

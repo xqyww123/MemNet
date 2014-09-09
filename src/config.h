@@ -24,6 +24,7 @@ namespace Xero
 			static string web_browser;
 			static string dir_browser;
 			static bool q;
+			static string notedir;
 
 			static void init(int argc, char* argv[]);
 			static string get(string name, string defaul);

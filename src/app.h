@@ -10,13 +10,16 @@ namespace Xero {
 		class NoteTip
 		{
 			public:
-				enum Type { note, dir, link };
+				enum Type { note, dir, link, badtype};
 				string name;
 				string val;
 				string comment;
 				Type type;
 
-				string active();
+				void active();
+				static NoteTip read(fstream& f);
+				void write(fstream& f) const;
+				static void write(const NoteTip& a, fstream& f) { a.write(f); }
 		};
 		string to_string(const NoteTip& tip);
 
@@ -27,9 +30,18 @@ namespace Xero {
 				vector<NoteTip> dirs;
 				vector<NoteTip> links;
 				string name;
+				string workdir() { return Config::notedir + "/" + name; }
 				WVec* tags;
 				void show_tags();
 				void show_oneline();
+				// return new note's reference in vectors
+				NoteTip& add_tip(const NoteTip& tip); 
+				NoteTip& add_tip(const string& name, const string& val, NoteTip::Type type);
+				bool contains_tip(string name);
+
+				static void save_Note(Note* nt, fstream& f);
+				//void save_Note(fstream& f) { save_Note(this, f); }
+				static Note* read_Note(fstream& f);
 		};
 
 		class MainSta;
@@ -41,7 +53,7 @@ namespace Xero {
 				NoteSta() { setup_sta(); }
 				MainSta* main_sta;
 				Note* get_current() { return current;  }
-				void set_current(Note* note) { current = note; name = string("Note - ") + current->name; }
+				void set_current(Note* note) ;
 				
 				void list_note();
 				void list_dirs();
@@ -61,6 +73,7 @@ namespace Xero {
 				void close();
 				void ui_drop();
 				void ui_move();
+				void ui_addtip();
 		};
 
 		class MainSta : public Status
@@ -68,7 +81,9 @@ namespace Xero {
 				Dic<Note*> dic;
 				void sta_setup();
 			public:
-				MainSta() { note_sta.main_sta = this; sta_setup(); }
+				MainSta() ;
+				~MainSta() { save_file(); }
+				string save_adress() { return Config::notedir + "/info"; }
 				NoteSta note_sta;
 
 				void list_sta();
@@ -78,12 +93,17 @@ namespace Xero {
 
 				void open(Note& note);
 				void ui_open();
+				Note* find(string name);
+				void ui_open_by_name();
 
-				void create_new(WVec& tags);
+				Note* create_new(WVec& tags);
 				void ui_create_new();
+				void ui_list();
 
 				void drop(Note* nt);
 				void tag_move(Note* nt, WVec& tags);
+				void read_file();
+				void save_file();
 		};
 	}
 }

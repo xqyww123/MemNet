@@ -3,6 +3,9 @@
 #include <cstring>
 #include <string>
 #include <algorithm>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 using namespace std;
 
 int to_i(string& str)
@@ -140,3 +143,49 @@ string string_format(const string fmt_str, ...)
 // ref end
 
 void prt_strs(const vector<string>& ss) { list_strs(ss); }
+bool user_input_newline()
+{
+	while (true)
+	{
+		int c = getchar();
+		switch(c)
+		{
+			case '\n':
+				ungetc(c, stdin);
+				return true;
+			case ' ':
+			case '\t':
+			case '\r':
+			case '\v':
+			case '\f':
+				continue;
+			default:
+				ungetc(c,stdin);
+				return false;
+		}
+	}
+}
+string ui_getval(const string& tink)
+{
+	string re;
+	if (user_input_newline()) cout << tink;
+	cin >> re;
+	return re;
+}
+bool like(const string& a, const string& b)
+{
+	return !strncmp(a.c_str(), b.c_str(), min(a.length(), b.length()));
+}
+string extract_tilde(const string& str)
+{
+	struct passwd *pw = getpwuid(getuid());
+	const char *homedir = pw->pw_dir;
+	string re;
+	for (auto a : str)
+	{
+		if (a == '~')
+			re.append(homedir);
+		else re.push_back(a);
+	}
+	return re;
+}

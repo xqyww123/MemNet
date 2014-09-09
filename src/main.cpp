@@ -42,6 +42,7 @@ void tread()
 	puts("read\n");
 	delete dic;
 }
+MainSta* mst;
 void init(int argc, char* argv[])
 {
 	freq_init(TO_STR(FREQ_FILE));
@@ -50,8 +51,8 @@ void init(int argc, char* argv[])
 	//main_st.name = "main";
 	//main_st.add_action(Action("test", [](Status& a){test();}));
 	//main_st.add_action(Action("tread", [](Status& a){tread();}));
-	MainSta mst;
-	StatusMng::init(mst);
+	mst = new MainSta();
+	StatusMng::init(*mst);
 	Vec::init();
 }
 
@@ -64,8 +65,7 @@ void termi()
 int main(int argc, char* argv[])
 {
 	init(argc, argv);
-	StatusMng::invoke(Config::action(1, "help"));
-
+	StatusMng::run_interactive();
 	termi();
 	return 0;
 }

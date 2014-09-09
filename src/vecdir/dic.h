@@ -45,9 +45,9 @@ namespace Xero
 				void insert(WVec& vec, T& data);
 				void remove(Pair<T>* pair) { data.erase(find(data.begin(), data.end(), pair)); }
 
-				typedef void (*DataSerialize) (T& data, fstream& f);
+				typedef function<void(T&, fstream&)> DataSerialize;
 				void write(fstream& f, DataSerialize ser);
-				typedef T (*DataDeserialize) (fstream& f);
+				typedef function<T(fstream& f)> DataDeserialize;
 				static Dic* read(fstream& f, DataDeserialize deser);
 		};
 	}
